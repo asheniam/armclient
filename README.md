@@ -35,4 +35,8 @@ Credentials:
   client_id: &lt;clientId&gt;
   client_secret: &lt;clientSecret&gt;
   tenant_id: &lt;tenantId&gt;
-</pre
+</pre>
+
+armclient will pull Grafana dashboard templates from the following repository.
+
+https://github.com/asheniam/azure-grafana-dashboard-templates
