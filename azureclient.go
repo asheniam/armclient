@@ -117,6 +117,37 @@ func (azureClient *AzureClient) sendHttpMessage(method string, url string) *http
 	return response
 }
 
+func (azureClient *AzureClient) getAzureResources(maxContinuation int) []ArmResource {
+	// Invoke Azure Resource Manager resource cache API to find all Azure resources on the subscription
+	armResourceSlice := make([]ArmResource, 0)
+	targetUrl := fmt.Sprintf("/subscriptions/%s/resources?api-version=2017-08-01", azureClient.config.Credentials.SubscriptionID)
+
+	// Follow nextLink continuation tokens
+	i := 0
+	for len(targetUrl) > 0 && i <= maxContinuation {
+
+		targetUrl = func(getUrl string) string {
+			response := azureClient.sendHttpMessage("GET", getUrl)
+			defer response.Body.Close()
+			body, err := ioutil.ReadAll(response.Body)
+			if err != nil {
+				log.Fatalf("Error reading body of response: %v", err)
+			}
+
+			armResourceListResponse := convertToArmResourceListResponse(body)
+			for _, armResource := range armResourceListResponse.Values {
+				armResourceSlice = append(armResourceSlice, armResource)
+			}
+
+			return armResourceListResponse.NextLink
+		}(targetUrl)
+
+		i++
+	}
+
+	return armResourceSlice
+}
+
 func prettyPrintJson(body []byte) {
 	var jsonElement map[string]interface{}
 	err := json.Unmarshal(body, &jsonElement)

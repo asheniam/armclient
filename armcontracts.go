@@ -2,7 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 
+	. "github.com/ahmetb/go-linq"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,6 +19,43 @@ type ArmResource struct {
 	Location string `json:"location"`
 	Name     string `json:"name"`
 	Type     string `json:"type"`
+}
+
+func (armResource *ArmResource) getResourceGroupName() (string, error) {
+	armResourceIdParts := strings.Split(armResource.Id, "/")
+	for index, armResourceIdPart := range armResourceIdParts {
+		// Resource group name is the next segment after 'resourcegroups'
+		if strings.EqualFold(armResourceIdPart, "resourcegroups") {
+			if index < len(armResourceIdParts)-1 {
+				return armResourceIdParts[index+1], nil
+			} else {
+				return "", fmt.Errorf("Unable to find resource group")
+			}
+		}
+	}
+
+	return "", fmt.Errorf("Unable to find resource group")
+}
+
+// TODO, we need to test this with SQL databases -- server/database
+func (armResource *ArmResource) getResourceName() string {
+	armResourceIdParts := strings.Split(armResource.Id, "/")
+	return armResourceIdParts[len(armResourceIdParts)-1]
+}
+
+func getDistinctRegions(armResources []ArmResource) []string {
+	var regions []string
+	From(armResources).SelectT(
+		func(r ArmResource) string {
+			return r.Location
+		},
+	).DistinctByT(
+		func(l string) string {
+			return l
+		},
+	).ToSlice(&regions)
+
+	return regions
 }
 
 func convertToArmResourceListResponse(body []byte) ArmResourceListResponse {
