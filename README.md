@@ -19,6 +19,9 @@ Commands:
 
   resources [&lt;maxcontinuation&gt;]
     Print out the Azure resources that exist on this subscription
+
+  grafana &lt;title&gt; &lt;dataSource&gt; &lt;resourcetype&gt; [&lt;maxdashboardresource&gt;] [&lt;maxcontinuation&gt;]
+    Generate Grafana dashboard JSON files for given Azure resource type
 </pre>
 
 To use armclient, you must first create a service principal which has Reader permission to access your Azure subscription.
