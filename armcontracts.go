@@ -45,10 +45,28 @@ func (armResource *ArmResource) getResourceGroupName() (string, error) {
 	return "", fmt.Errorf("Unable to find resource group")
 }
 
-// TODO, we need to test this with SQL databases -- server/database
 func (armResource *ArmResource) getResourceName() string {
+	resourceName := ""
 	armResourceIdParts := strings.Split(armResource.Id, "/")
-	return armResourceIdParts[len(armResourceIdParts)-1]
+
+	// To generate the ARM resource name, take every other segment after {providers}
+	providerIndex := -1
+	for index, armResourceIdPart := range armResourceIdParts {
+
+		if providerIndex > 0 && index > providerIndex+1 && index%2 == 0 {
+			if len(resourceName) > 0 {
+				resourceName += "/"
+			}
+
+			resourceName += armResourceIdPart
+		}
+
+		if strings.EqualFold(armResourceIdPart, "providers") {
+			providerIndex = index
+		}
+	}
+
+	return resourceName
 }
 
 func getDistinctRegions(armResources []ArmResource) []string {
