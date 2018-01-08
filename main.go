@@ -32,6 +32,7 @@ func main() {
 
 	// grafana command
 	grafanaCommand := kingpin.Command("grafana", "Generate Grafana dashboard JSON files for given Azure resource type.")
+	grafanaCommandKind := grafanaCommand.Flag("kind", "The kind property on the Azure Resource Manager (ARM) resource type").Default("").String()
 	grafanaCommandTitle := grafanaCommand.Arg("title", "This will be used as prefix in the dashboard title").Required().String()
 	grafanaCommandDataSourceName := grafanaCommand.Arg("dataSource", "The Azure Monitor data source name on Grafana").Required().String()
 	grafanaCommandResourceType := grafanaCommand.Arg("resourcetype", "The Azure Resource Manager (ARM) resource type").Required().String()
@@ -62,7 +63,7 @@ func main() {
 		processor.processSummarizeCommand(*summaryCommandMaxContinuation)
 		break
 	case "grafana":
-		processor.processGrafanaCommand(*grafanaCommandTitle, *grafanaCommandDataSourceName, *grafanaCommandMaxContinuation, *grafanaCommandMaxDashboardResources, *grafanaCommandResourceType)
+		processor.processGrafanaCommand(*grafanaCommandTitle, *grafanaCommandDataSourceName, *grafanaCommandMaxContinuation, *grafanaCommandMaxDashboardResources, *grafanaCommandResourceType, *grafanaCommandKind)
 		break
 	default:
 		log.Errorf("Unknown command: %s\n", command)

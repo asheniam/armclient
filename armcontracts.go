@@ -15,10 +15,18 @@ type ArmResourceListResponse struct {
 }
 
 type ArmResource struct {
-	Id       string `json:"id"`
-	Location string `json:"location"`
-	Name     string `json:"name"`
-	Type     string `json:"type"`
+	Id       string         `json:"id"`
+	Location string         `json:"location"`
+	Name     string         `json:"name"`
+	Type     string         `json:"type"`
+	Kind     string         `json:"kind"`
+	Sku      ArmResourceSku `json:"sku"`
+}
+
+type ArmResourceSku struct {
+	Name string `json:"name"`
+	Size string `json:"size"`
+	Tier string `json:"tier"`
 }
 
 func (armResource *ArmResource) getResourceGroupName() (string, error) {

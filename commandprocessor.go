@@ -64,6 +64,22 @@ func (processor *CommandProcessor) processSummarizeCommand(maxContinuation int) 
 			fmt.Printf("  ResourceType: %s:\n", armResourceType)
 			for _, armResource := range armResourceByIdMap {
 				fmt.Printf("    Id: %s:\n", armResource.Id)
+
+				if len(armResource.Kind) > 0 {
+					fmt.Printf("      Kind: %s\n", armResource.Kind)
+				}
+
+				if len(armResource.Sku.Name) > 0 {
+					fmt.Printf("      SKU Name: %s\n", armResource.Sku.Name)
+				}
+
+				if len(armResource.Sku.Size) > 0 {
+					fmt.Printf("      SKU Size: %s\n", armResource.Sku.Size)
+				}
+
+				if len(armResource.Sku.Tier) > 0 {
+					fmt.Printf("      SKU Tier: %s\n", armResource.Sku.Tier)
+				}
 			}
 
 			fmt.Println()
@@ -71,14 +87,24 @@ func (processor *CommandProcessor) processSummarizeCommand(maxContinuation int) 
 	}
 }
 
-func (processor *CommandProcessor) processGrafanaCommand(titlePrefix string, dataSourceName string, maxContinuation int, maxDashboardResources int, resourceType string) {
+func (processor *CommandProcessor) processGrafanaCommand(titlePrefix string, dataSourceName string, maxContinuation int, maxDashboardResources int, resourceType string, resourceKind string) {
 	// Invoke Azure Resource Manager resource cache API to find all Azure resources on the subscription
 	armResources := processor.azureClient.getAzureResources(maxContinuation)
 
-	// Filter by resource type, TODO move into GET API
+	encodedResourceType := resourceType
+	if len(resourceKind) > 0 {
+		encodedResourceType += "/kind/" + resourceKind
+	}
+
+	// Filter by resource type and resoure kind
+	// TODO, move into GET API as server side filter
 	var filteredArmResources []ArmResource
 	From(armResources).WhereT(func(r ArmResource) bool {
-		return strings.EqualFold(r.Type, resourceType)
+		if len(resourceKind) == 0 {
+			return strings.EqualFold(r.Type, resourceType)
+		} else {
+			return strings.EqualFold(r.Type, resourceType) && strings.EqualFold(r.Kind, resourceKind)
+		}
 	}).ToSlice(&filteredArmResources)
 
 	armResources = filteredArmResources
@@ -100,7 +126,7 @@ func (processor *CommandProcessor) processGrafanaCommand(titlePrefix string, dat
 	}
 
 	// Read Grafana JSON template for resource type
-	dashboardTemplates := getGitHubGrafanaTemplates(resourceType)
+	dashboardTemplates := getGitHubGrafanaTemplates(resourceType, resourceKind)
 	if len(dashboardTemplates) == 0 {
 		fmt.Println("No dashboards found for resource type on github")
 	}
@@ -121,7 +147,7 @@ func (processor *CommandProcessor) processGrafanaCommand(titlePrefix string, dat
 			}
 
 			dashboard := NewGrafanaDashboard(dashboardTemplate.Contents)
-			title := fmt.Sprintf("%s - %s - %s - %s", titlePrefix, resourceType, dashboardTemplate.Name, region)
+			title := fmt.Sprintf("%s - %s - %s - %s", titlePrefix, encodedResourceType, dashboardTemplate.Name, region)
 			dashboard.update(title, dataSourceName, maxDashboardResources, dashboardArmResources)
 
 			generatedDashboard, err := json.MarshalIndent(dashboard.ParsedJson, "", " ")
@@ -129,12 +155,14 @@ func (processor *CommandProcessor) processGrafanaCommand(titlePrefix string, dat
 				log.Fatalf("Error generating dashboard: %v", err)
 			}
 
-			outputFile := strings.ToLower("dashboard_" + titlePrefix + "_" + resourceType + "_" + region)
+			outputFile := strings.ToLower("dashboard_" + titlePrefix + "_" + encodedResourceType + "_" + dashboardTemplate.Name + "_" + region)
 			outputFile = strings.Replace(outputFile, " ", "_", -1)
 			outputFile = strings.Replace(outputFile, "/", "_", -1)
 			outputFile = strings.Replace(outputFile, ".", "_", -1)
 			outputFile += ".json"
 			ioutil.WriteFile(outputFile, generatedDashboard, 0644)
+
+			fmt.Printf("Created %s\n", outputFile)
 		}
 	}
 }
