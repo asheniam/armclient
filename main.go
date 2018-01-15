@@ -35,6 +35,8 @@ func main() {
 	grafanaCommandTitle := grafanaCommand.Flag("title", "This will be used as prefix in the dashboard title").Required().String()
 	grafanaCommandDataSourceName := grafanaCommand.Flag("datasource", "The Azure Monitor data source name on Grafana").Required().String()
 	grafanaCommandResourceType := grafanaCommand.Flag("resourcetype", "The Azure Resource Manager (ARM) resource type").Required().String()
+	grafanaCommandSubResourceType := grafanaCommand.Flag("subresourcetype", "The sub-resource type underneath the ARM resource type.").Default("").String()
+	grafanaCommandSubResourceName := grafanaCommand.Flag("subresourcename", "The resource name of the sub-resource type underneath the ARM resource type.").Default("").String()
 	grafanaCommandKind := grafanaCommand.Flag("kind", "The kind property on the Azure Resource Manager (ARM) resource type.  This is optional.").Default("").String()
 	grafanaCommandMaxDashboardResources := grafanaCommand.Flag("maxdashboardresource", "The max number of Azure resources to include in each dashboard.  Default to 10.").Default("10").Int()
 	grafanaCommandMaxContinuation := grafanaCommand.Flag("maxcontinuation", "The max number of continuations to follow when calling ARM API.  Default to 10.").Default("10").Int()
@@ -63,7 +65,7 @@ func main() {
 		processor.processSummarizeCommand(*summaryCommandMaxContinuation)
 		break
 	case "grafana":
-		processor.processGrafanaCommand(*grafanaCommandTitle, *grafanaCommandDataSourceName, *grafanaCommandMaxContinuation, *grafanaCommandMaxDashboardResources, *grafanaCommandResourceType, *grafanaCommandKind)
+		processor.processGrafanaCommand(*grafanaCommandTitle, *grafanaCommandDataSourceName, *grafanaCommandMaxContinuation, *grafanaCommandMaxDashboardResources, *grafanaCommandResourceType, *grafanaCommandKind, *grafanaCommandSubResourceType, *grafanaCommandSubResourceName)
 		break
 	default:
 		log.Errorf("Unknown command: %s\n", command)
