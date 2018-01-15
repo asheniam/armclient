@@ -26,7 +26,7 @@ const (
 	GitHubGrafanaTemplateRootUrl = "https://api.github.com/repos/asheniam/azure-grafana-dashboard-templates/contents/"
 )
 
-func getGitHubGrafanaTemplates(resourceType string, resourceKind string) []GitHubDashboardTemplate {
+func getGitHubGrafanaTemplates(resourceType string, resourceKind string, subResourceType string) []GitHubDashboardTemplate {
 
 	var httpClient *http.Client = &http.Client{}
 
@@ -34,11 +34,15 @@ func getGitHubGrafanaTemplates(resourceType string, resourceKind string) []GitHu
 	// for this ARM resource type.
 	encodedResourceType := resourceType
 
-	if len(resourceKind) > 0 {
-		resourceType = resourceType + "/kind/" + resourceKind
+	if len(subResourceType) > 0 {
+		encodedResourceType = resourceType + "/" + subResourceType
 	}
 
-	encodedResourceType = strings.Replace(resourceType, ".", "-", -1)
+	if len(resourceKind) > 0 {
+		resourceType = encodedResourceType + "/kind/" + resourceKind
+	}
+
+	encodedResourceType = strings.Replace(encodedResourceType, ".", "-", -1)
 	encodedResourceType = strings.Replace(encodedResourceType, "/", "-", -1)
 	githubUrl := fmt.Sprintf("%s%s?ref=master", GitHubGrafanaTemplateRootUrl, encodedResourceType)
 

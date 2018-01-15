@@ -21,7 +21,7 @@ func NewGrafanaDashboard(templateContents string) *GrafanaDashboard {
 }
 
 // Update the contents of the Grafana dashboard template with Azure resource IDs
-func (dashboard *GrafanaDashboard) update(title string, dataSourceName string, maxDashboardResources int, armResources []ArmResource) {
+func (dashboard *GrafanaDashboard) update(title string, dataSourceName string, maxDashboardResources int, armResources []ArmResource, subResourceName string) {
 	var rowsJson []interface{}
 	var panelsJson []interface{}
 	var targetsJson []interface{}
@@ -51,7 +51,17 @@ func (dashboard *GrafanaDashboard) update(title string, dataSourceName string, m
 				for _, armResource := range armResources[:upperBound] {
 					newAzureMonitorTargetJson := copyMap(azureMonitorTargetJson)
 					newAzureMonitorTargetJson["resourceGroup"], _ = armResource.getResourceGroupName()
-					newAzureMonitorTargetJson["resourceName"] = armResource.getResourceName()
+
+					// This is a workaround to handle sub-resource cases such as Microsoft.Storage/storageAccounts/blobServices
+					// where ARM does not track the sub-resource "blobServices".
+					// In such case, the resource name is {storageAccountName}/default and it's expected the client passes in
+					// the sub-resource name "default"
+					resourceName := armResource.getResourceName()
+					if len(subResourceName) > 0 {
+						resourceName += "/" + subResourceName
+					}
+
+					newAzureMonitorTargetJson["resourceName"] = resourceName
 
 					newTargetJson := copyMap(targetJson)
 					newTargetJson["azureMonitor"] = newAzureMonitorTargetJson

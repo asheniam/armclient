@@ -87,11 +87,15 @@ func (processor *CommandProcessor) processSummarizeCommand(maxContinuation int) 
 	}
 }
 
-func (processor *CommandProcessor) processGrafanaCommand(titlePrefix string, dataSourceName string, maxContinuation int, maxDashboardResources int, resourceType string, resourceKind string) {
+func (processor *CommandProcessor) processGrafanaCommand(titlePrefix string, dataSourceName string, maxContinuation int, maxDashboardResources int, resourceType string, resourceKind string, subResourceType string, subResourceName string) {
 	// Invoke Azure Resource Manager resource cache API to find all Azure resources on the subscription
 	armResources := processor.azureClient.getAzureResources(maxContinuation)
 
 	encodedResourceType := resourceType
+	if len(subResourceType) > 0 {
+		encodedResourceType += "/" + subResourceType
+	}
+
 	if len(resourceKind) > 0 {
 		encodedResourceType += "/kind/" + resourceKind
 	}
@@ -126,7 +130,7 @@ func (processor *CommandProcessor) processGrafanaCommand(titlePrefix string, dat
 	}
 
 	// Read Grafana JSON template for resource type
-	dashboardTemplates := getGitHubGrafanaTemplates(resourceType, resourceKind)
+	dashboardTemplates := getGitHubGrafanaTemplates(resourceType, resourceKind, subResourceType)
 	if len(dashboardTemplates) == 0 {
 		fmt.Println("No dashboards found for resource type on github")
 	}
@@ -148,7 +152,7 @@ func (processor *CommandProcessor) processGrafanaCommand(titlePrefix string, dat
 
 			dashboard := NewGrafanaDashboard(dashboardTemplate.Contents)
 			title := fmt.Sprintf("%s - %s - %s - %s", titlePrefix, encodedResourceType, dashboardTemplate.Name, region)
-			dashboard.update(title, dataSourceName, maxDashboardResources, dashboardArmResources)
+			dashboard.update(title, dataSourceName, maxDashboardResources, dashboardArmResources, subResourceName)
 
 			generatedDashboard, err := json.MarshalIndent(dashboard.ParsedJson, "", " ")
 			if err != nil {
