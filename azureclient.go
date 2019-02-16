@@ -84,7 +84,11 @@ func (azureClient *AzureClient) sendHttpMessage(method string, url string) *http
 		url += "/"
 	}
 
-	targetUrl := fmt.Sprintf("%s%s", azureClient.environment.armUrl, url)
+	targetUrl := url
+	if !strings.HasPrefix(url, "https://") {
+		targetUrl = fmt.Sprintf("%s%s", azureClient.environment.armUrl, url)
+	}
+
 	log.Infof("Running %s %s\n", method, url)
 
 	log.Debugf("Executing %s %s\n", method, targetUrl)
