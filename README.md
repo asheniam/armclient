@@ -29,7 +29,7 @@ https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-cre
 
 Example: sample-azure.yml
 <pre>
-Credentials:
+credentials:
   environment: public
   subscription_id: &lt;subscriptionId&gt;
   client_id: &lt;clientId&gt;
