@@ -19,8 +19,12 @@ type AzureClient struct {
 }
 
 func NewAzureClient(config *Config, environment *Environment) *AzureClient {
+
+	httpClient := &http.Client{}
+	httpClient.Transport = &environment.httpTransport
+
 	return &AzureClient{
-		client:      &http.Client{},
+		client:      httpClient,
 		config:      config,
 		environment: environment,
 		accessToken: "",
@@ -124,7 +128,11 @@ func (azureClient *AzureClient) sendHttpMessage(method string, url string) *http
 func (azureClient *AzureClient) getAzureResources(maxContinuation int) []ArmResource {
 	// Invoke Azure Resource Manager resource cache API to find all Azure resources on the subscription
 	armResourceSlice := make([]ArmResource, 0)
-	targetUrl := fmt.Sprintf("/subscriptions/%s/resources?api-version=2017-08-01", azureClient.config.Credentials.SubscriptionID)
+	targetUrl := fmt.Sprintf(
+			"/subscriptions/%s/resources?api-version=%s",
+			azureClient.config.Credentials.SubscriptionID,
+			azureClient.environment.apiVersion,
+		)
 
 	// Follow nextLink continuation tokens
 	i := 0
