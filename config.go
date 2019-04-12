@@ -19,6 +19,7 @@ type AzureCredentials struct {
 	ClientID       string `yaml:"client_id"`
 	ClientSecret   string `yaml:"client_secret"`
 	TenantID       string `yaml:"tenant_id"`
+	Token          string `yaml:"token"`
 
 	XXX map[string]interface{} `yaml:",inline"`
 }

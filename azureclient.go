@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
+	// "net/url"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -32,47 +32,48 @@ func NewAzureClient(config *Config, environment *Environment) *AzureClient {
 }
 
 func (azureClient *AzureClient) setAccessToken() {
-	aadLoginUrl := azureClient.environment.getAadLoginUrl(azureClient.config.Credentials.TenantID)
+	// aadLoginUrl := azureClient.environment.getAadLoginUrl(azureClient.config.Credentials.TenantID)
 
 	// Important: For AAD resource, there needs to be a trailing slash after the ARM URL
-	resource := azureClient.environment.armUrl
-	if !strings.HasSuffix(resource, "/") {
-		resource += "/"
-	}
+	// resource := azureClient.environment.armUrl
+	// if !strings.HasSuffix(resource, "/") {
+	// 	resource += "/"
+	// }
+	//
+	// form := url.Values{
+	// 	"grant_type":    {"client_credentials"},
+	// 	"resource":      {resource},
+	// 	"client_id":     {azureClient.config.Credentials.ClientID},
+	// 	"client_secret": {azureClient.config.Credentials.ClientSecret},
+	// }
 
-	form := url.Values{
-		"grant_type":    {"client_credentials"},
-		"resource":      {resource},
-		"client_id":     {azureClient.config.Credentials.ClientID},
-		"client_secret": {azureClient.config.Credentials.ClientSecret},
-	}
+	// log.Debugf("Getting token from %s\n", aadLoginUrl)
 
-	log.Debugf("Getting token from %s\n", aadLoginUrl)
+	// response, err := azureClient.client.PostForm(aadLoginUrl, form)
 
-	response, err := azureClient.client.PostForm(aadLoginUrl, form)
+	// if err != nil {
+	// 	log.Fatalf("Error authenticating against Azure API: %v", err)
+	// }
 
-	if err != nil {
-		log.Fatalf("Error authenticating against Azure API: %v", err)
-	}
+	// if response.StatusCode != 200 {
+	// 	log.Fatalf("Error authenticating against Azure API - status code: %d", response.StatusCode)
+	// }
 
-	if response.StatusCode != 200 {
-		log.Fatalf("Error authenticating against Azure API - status code: %d", response.StatusCode)
-	}
+	// defer response.Body.Close()
+	// body, err := ioutil.ReadAll(response.Body)
+	//
+	// if err != nil {
+	// 	log.Fatalf("Error authenticating against Azure API - error reading body of response: %v", err)
+	// }
+	//
+	// var data map[string]interface{}
+	// err = json.Unmarshal(body, &data)
+	// if err != nil {
+	// 	log.Fatalf("or authenticating against Azure API - Error unmarshalling response body: %v", err)
+	// }
 
-	defer response.Body.Close()
-	body, err := ioutil.ReadAll(response.Body)
-
-	if err != nil {
-		log.Fatalf("Error authenticating against Azure API - error reading body of response: %v", err)
-	}
-
-	var data map[string]interface{}
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		log.Fatalf("or authenticating against Azure API - Error unmarshalling response body: %v", err)
-	}
-
-	azureClient.accessToken = data["access_token"].(string)
+	// azureClient.accessToken = data["access_token"].(string)
+	azureClient.accessToken = azureClient.config.Credentials.Token
 }
 
 func (azureClient *AzureClient) ensureAccessTokenSet() {
