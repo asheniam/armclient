@@ -15,11 +15,11 @@ type Config struct {
 
 type AzureCredentials struct {
 	Environment    string `yaml:"environment"`
-	SubscriptionID string `yaml:"subscription_id"`
-	ClientID       string `yaml:"client_id"`
-	ClientSecret   string `yaml:"client_secret"`
-	TenantID       string `yaml:"tenant_id"`
-	Token          string `yaml:"token"`
+	SubscriptionID string `yaml:"subscription"`
+	TenantID       string `yaml:"tenant"`
+	Token          string `yaml:"accessToken"`
+	ExpiresOn      string `yaml:"expiresOn"`
+	TokenType      string `yaml:"tokenType"`
 
 	XXX map[string]interface{} `yaml:",inline"`
 }
