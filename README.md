@@ -24,19 +24,21 @@ Commands:
     Generate Grafana dashboard JSON files for given Azure resource type
 </pre>
 
-To use armclient, you must first create a service principal which has Reader permission to access your Azure subscription.
-https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal
+To use armclient with Azure CLI / shell.azure.com, generate an access token and populate the config file.
+
+      az account get-access-token -o yaml
 
 Example: sample-azure.yml
-<pre>
-credentials:
-  environment: public
-  subscription_id: &lt;subscriptionId&gt;
-  client_id: &lt;clientId&gt;
-  client_secret: &lt;clientSecret&gt;
-  tenant_id: &lt;tenantId&gt;
-</pre>
+
+    credentials:
+      environment: public
+      accessToken:
+      expiresOn:
+      subscription:
+      tenant:
+      tokenType:
+
 
 armclient will pull Grafana dashboard templates from the following repository.
 
-https://github.com/asheniam/azure-grafana-dashboard-templates
+https://github.com/robdyke/azure-grafana-dashboard-templates
